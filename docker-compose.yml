@@ -23,6 +23,7 @@ services:
       - ./lsws/conf:/usr/local/lsws/conf
       - ./lsws/admin-conf:/usr/local/lsws/admin/conf
       - ./bin/container:/usr/local/bin
+      - ./bin/init-wordpress.sh:/usr/local/bin/init-wordpress.sh
       - ./sites:/var/www/vhosts/
       - ./acme:/root/.acme.sh/
       - ./logs:/usr/local/lsws/logs/
@@ -36,6 +37,12 @@ services:
       TZ: ${TimeZone}
     networks:
       - default
+    depends_on:
+      - mysql
+    command: >
+      bash -c "chmod +x /usr/local/bin/init-wordpress.sh &&
+               /usr/local/bin/init-wordpress.sh &
+               /usr/local/lsws/bin/lshttpd -D"
   phpmyadmin:
     image: bitnami/phpmyadmin:5.2.2
     ports:
