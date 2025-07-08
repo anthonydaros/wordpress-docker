@@ -7,8 +7,15 @@ echo "=== Iniciando configuração automática do WordPress ==="
 
 # Aguardar MySQL estar pronto
 echo "Aguardando MySQL ficar disponível..."
+COUNTER=0
+MAX_ATTEMPTS=20
 until mysql -h mysql -u ${MYSQL_USER} -p${MYSQL_PASSWORD} -e "SELECT 1" > /dev/null 2>&1; do
-    echo "MySQL ainda não está pronto, aguardando..."
+    echo "MySQL ainda não está pronto, aguardando... (tentativa $COUNTER/$MAX_ATTEMPTS)"
+    COUNTER=$((COUNTER+1))
+    if [ $COUNTER -eq $MAX_ATTEMPTS ]; then
+        echo "MySQL timeout - continuando sem setup automático"
+        exit 1
+    fi
     sleep 5
 done
 
@@ -20,10 +27,7 @@ if [ ! -d "/var/www/vhosts/${DOMAIN}" ]; then
     domainctl.sh --add ${DOMAIN}
     
     echo "Configurando database para: ${DOMAIN}"
-    database.sh --domain ${DOMAIN} --user ${MYSQL_USER} --password ${MYSQL_PASSWORD} --database ${MYSQL_DATABASE}
-    
-    echo "Instalando WordPress para: ${DOMAIN}"
-    appinstallctl.sh --app wordpress --domain ${DOMAIN}
+    bash /usr/local/bin/appinstallctl.sh --app wordpress --domain ${DOMAIN}
     
     echo "WordPress instalado com sucesso!"
 else

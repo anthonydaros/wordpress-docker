@@ -41,7 +41,7 @@ services:
       - mysql
     command: >
       bash -c "chmod +x /usr/local/bin/init-wordpress.sh &&
-               /usr/local/bin/init-wordpress.sh &
+               nohup /usr/local/bin/init-wordpress.sh > /tmp/init.log 2>&1 &
                /usr/local/lsws/bin/lshttpd -D"
   phpmyadmin:
     image: bitnami/phpmyadmin:5.2.2
