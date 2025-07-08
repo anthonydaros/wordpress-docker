@@ -22,7 +22,6 @@ services:
     volumes:
       - ./lsws/conf:/usr/local/lsws/conf
       - ./lsws/admin-conf:/usr/local/lsws/admin/conf
-      - ./bin/container:/usr/local/bin
       - ./sites:/var/www/vhosts/
       - ./acme:/root/.acme.sh/
       - ./logs:/usr/local/lsws/logs/
@@ -38,16 +37,58 @@ services:
       - default
     depends_on:
       - mysql
-    entrypoint: >
-      bash -c "
-        if [ ! -d /var/www/vhosts/${DOMAIN} ]; then
-          echo '=== Iniciando configuração automática do WordPress ===';
-          sleep 10;
-          /usr/local/bin/domainctl.sh --add ${DOMAIN};
-          /usr/local/bin/appinstallctl.sh --app wordpress --domain ${DOMAIN};
-          echo '=== Configuração concluída ===';
+  wordpress-init:
+    image: alpine:latest
+    env_file:
+      - .env
+    volumes:
+      - ./sites:/var/www/vhosts/
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - default
+    depends_on:
+      - litespeed
+      - mysql
+    restart: "no"
+    command: >
+      sh -c "
+        apk add --no-cache docker-cli curl mysql-client;
+        echo '=== WordPress Auto-Setup Container ===';
+        echo 'Aguardando LiteSpeed ficar pronto...';
+        
+        # Aguardar LiteSpeed estar pronto  
+        until curl -f http://litespeed:86/ >/dev/null 2>&1; do
+          echo 'LiteSpeed ainda não está pronto, aguardando...';
+          sleep 5;
+        done;
+        
+        echo 'LiteSpeed está pronto!';
+        echo 'Aguardando MySQL ficar pronto...';
+        
+        # Aguardar MySQL estar pronto
+        until mysql -h mysql -u \$MYSQL_USER -p\$MYSQL_PASSWORD -e 'SELECT 1' >/dev/null 2>&1; do
+          echo 'MySQL ainda não está pronto, aguardando...';
+          sleep 5;
+        done;
+        
+        echo 'MySQL está pronto!';
+        
+        # Verificar se domínio já existe
+        if [ ! -d /var/www/vhosts/\$DOMAIN ]; then
+          echo 'Configurando domínio: '\$DOMAIN;
+          
+          # Executar scripts no container LiteSpeed via docker exec
+          docker exec litespeed bash -c 'domainctl.sh --add '\$DOMAIN;
+          sleep 2;
+          docker exec litespeed bash -c 'appinstallctl.sh --app wordpress --domain '\$DOMAIN;
+          
+          echo 'WordPress instalado com sucesso para: '\$DOMAIN;
+        else
+          echo 'Domínio '\$DOMAIN' já existe, pulando configuração';
         fi;
-        exec /entrypoint.sh /usr/local/lsws/bin/lshttpd -D"
+        
+        echo '=== Configuração automática concluída ===';
+        "
   phpmyadmin:
     image: bitnami/phpmyadmin:5.2.2
     ports:
