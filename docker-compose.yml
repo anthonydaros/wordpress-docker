@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mariadb:11.4
+    image: mariadb:11.8
     logging:
       driver: none
     command: ["--max-allowed-packet=512M"]
@@ -27,7 +27,7 @@ services:
       - ./acme:/root/.acme.sh/
       - ./logs:/usr/local/lsws/logs/
     ports:
-      - 80:80
+      - 86:86
       - 443:443
       - 443:443/udp
       - 7080:7080
@@ -39,8 +39,8 @@ services:
   phpmyadmin:
     image: bitnami/phpmyadmin:5.2.2
     ports:
-      - 8080:8080
-      - 8443:8443
+      - 8086:8086
+      - 8446:8446
     environment:
         DATABASE_HOST: mysql
     restart: always
