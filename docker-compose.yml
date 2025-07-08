@@ -43,11 +43,11 @@ services:
         if [ ! -d /var/www/vhosts/${DOMAIN} ]; then
           echo '=== Iniciando configuração automática do WordPress ===';
           sleep 10;
-          domainctl.sh --add ${DOMAIN};
-          appinstallctl.sh --app wordpress --domain ${DOMAIN};
+          /usr/local/bin/domainctl.sh --add ${DOMAIN};
+          /usr/local/bin/appinstallctl.sh --app wordpress --domain ${DOMAIN};
           echo '=== Configuração concluída ===';
         fi;
-        exec /entrypoint.sh lshttpd"
+        exec /entrypoint.sh /usr/local/lsws/bin/lshttpd -D"
   phpmyadmin:
     image: bitnami/phpmyadmin:5.2.2
     ports:
