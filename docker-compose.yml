@@ -82,12 +82,13 @@ services:
         if [ ! -d /var/www/vhosts/\$DOMAIN ]; then
           echo 'Configurando domínio: '\$DOMAIN;
           
-          # Executar scripts no container LiteSpeed via docker exec
+          # Aguardar e configurar container LiteSpeed
+          echo 'Aguardando container LiteSpeed aparecer...';
           LITESPEED_CONTAINER=\$(docker ps --format '{{.Names}}' | grep litespeed | head -1);
-          echo 'Container LiteSpeed: '\$LITESPEED_CONTAINER;
-          docker exec \$LITESPEED_CONTAINER domainctl.sh --add \$DOMAIN;
+          echo 'Container LiteSpeed encontrado: '\$LITESPEED_CONTAINER;
+          docker exec \$LITESPEED_CONTAINER /usr/local/bin/domainctl.sh --add \$DOMAIN;
           sleep 2;
-          docker exec \$LITESPEED_CONTAINER appinstallctl.sh --app wordpress --domain \$DOMAIN;
+          docker exec \$LITESPEED_CONTAINER /usr/local/bin/appinstallctl.sh --app wordpress --domain \$DOMAIN;
           
           echo 'WordPress instalado com sucesso para: '\$DOMAIN;
         else
