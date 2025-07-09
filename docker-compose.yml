@@ -26,9 +26,9 @@ services:
       - ./acme:/root/.acme.sh/
       - ./logs:/usr/local/lsws/logs/
     ports:
-      - 86:86
-      - 446:446
-      - 446:446/udp
+      - 86:80
+      - 446:443
+      - 446:443/udp
       - 7080:7080
     restart: always
     environment:
@@ -57,7 +57,7 @@ services:
         echo 'Aguardando LiteSpeed ficar pronto...';
         
         # Aguardar LiteSpeed estar pronto  
-        until curl -f http://litespeed:86/ >/dev/null 2>&1; do
+        until curl -f http://litespeed:80/ >/dev/null 2>&1; do
           echo 'LiteSpeed ainda não está pronto, aguardando...';
           sleep 5;
         done;
