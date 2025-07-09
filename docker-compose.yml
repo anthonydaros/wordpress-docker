@@ -83,11 +83,11 @@ services:
           echo 'Configurando domínio: '\$DOMAIN;
           
           # Executar scripts no container LiteSpeed via docker exec
-          LITESPEED_CONTAINER=\$(docker ps --format '{{.Names}}' | grep litespeed | grep woc0kwokk0oc4sg8ggcowkw8);
+          LITESPEED_CONTAINER=\$(docker ps --format '{{.Names}}' | grep litespeed | head -1);
           echo 'Container LiteSpeed: '\$LITESPEED_CONTAINER;
-          docker exec \$LITESPEED_CONTAINER bash -c 'domainctl.sh --add '\$DOMAIN;
+          docker exec \$LITESPEED_CONTAINER domainctl.sh --add \$DOMAIN;
           sleep 2;
-          docker exec \$LITESPEED_CONTAINER bash -c 'appinstallctl.sh --app wordpress --domain '\$DOMAIN;
+          docker exec \$LITESPEED_CONTAINER appinstallctl.sh --app wordpress --domain \$DOMAIN;
           
           echo 'WordPress instalado com sucesso para: '\$DOMAIN;
         else
