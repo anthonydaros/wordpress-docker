@@ -57,7 +57,7 @@ services:
         echo 'Aguardando LiteSpeed ficar pronto...';
         
         # Aguardar LiteSpeed estar pronto  
-        until curl -f http://litespeed:80/ >/dev/null 2>&1; do
+        until curl -f http://litespeed:8088/ >/dev/null 2>&1; do
           echo 'LiteSpeed ainda não está pronto, aguardando...';
           sleep 5;
         done;
