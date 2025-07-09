@@ -80,19 +80,18 @@ services:
         
         # Verificar se domínio já existe
         if [ ! -d /var/www/vhosts/\$DOMAIN ]; then
-          echo 'Configurando domínio: '\$DOMAIN;
+          echo 'Configurando domínio:' \$DOMAIN;
           
-          # Aguardar e configurar container LiteSpeed
-          echo 'Aguardando container LiteSpeed aparecer...';
-          LITESPEED_CONTAINER=\$(docker ps --format '{{.Names}}' | grep litespeed | head -1);
-          echo 'Container LiteSpeed encontrado: '\$LITESPEED_CONTAINER;
-          docker exec \$LITESPEED_CONTAINER /usr/local/bin/domainctl.sh --add \$DOMAIN;
+          # Executar scripts no container LiteSpeed
+          echo 'Executando scripts no container LiteSpeed...';
+          docker exec litespeed /usr/local/bin/domainctl.sh -A \$DOMAIN;
+          docker exec litespeed mkdir -p /var/www/vhosts/\$DOMAIN/html;
           sleep 2;
-          docker exec \$LITESPEED_CONTAINER /usr/local/bin/appinstallctl.sh --app wordpress --domain \$DOMAIN;
+          docker exec litespeed /usr/local/bin/appinstallctl.sh --app wordpress --domain \$DOMAIN;
           
-          echo 'WordPress instalado com sucesso para: '\$DOMAIN;
+          echo 'WordPress instalado com sucesso para:' \$DOMAIN;
         else
-          echo 'Domínio '\$DOMAIN' já existe, pulando configuração';
+          echo 'Domínio' \$DOMAIN 'já existe, pulando configuração';
         fi;
         
         echo '=== Configuração automática concluída ===';
